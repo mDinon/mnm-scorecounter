@@ -1,0 +1,429 @@
+@page "/game"
+@inject IGameSessionService GameSessionService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    @if (session == null)
+    {
+        <MudAlert Severity="Severity.Error" Class="rounded-lg">
+            No active game session found. Please set up a game first.
+            <MudButton Link="/" Variant="Variant.Filled" Color="Color.Primary" Class="ml-4">Go to Setup</MudButton>
+        </MudAlert>
+    }
+    else
+    {
+        <!-- Game Status Header Card -->
+        <MudCard Elevation="4" Class="mb-4 rounded-lg overflow-hidden">
+            <div class="px-6 py-4 d-flex flex-column flex-sm-row justify-between align-center" style="background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-primary-darken) 100%); color: white;">
+                <div>
+                    <MudText Typo="Typo.h4" Class="font-weight-bold d-flex align-center">
+                        <MudIcon Icon="@Icons.Material.Filled.SportsEsports" Class="mr-2" />
+                        Match in Progress
+                    </MudText>
+                    <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.85);">
+                        Target Score Limit: <span class="font-weight-bold" style="color: #FFEA00; font-size: 1.1rem;">@session.MaxScoreLimit</span> points
+                    </MudText>
+                </div>
+                <div class="mt-3 mt-sm-0 text-center text-sm-right d-flex flex-column align-center align-sm-end">
+                    <MudText Typo="Typo.subtitle2" Style="color: rgba(255,255,255,0.7);">ELAPSED TIME</MudText>
+                    <MudText Typo="Typo.h4" Class="font-weight-bold font-monospace" Style="color: #00E676;">
+                        <MudIcon Icon="@Icons.Material.Filled.Timer" Class="mr-1" Size="Size.Small" />
+                        @formattedTime
+                    </MudText>
+                </div>
+            </div>
+        </MudCard>
+
+        @if (session.IsEnded)
+        {
+            <!-- Game Over / Results Celebration Banner -->
+            <MudPaper Elevation="5" Class="p-6 mb-6 rounded-lg text-center border-3" Style="border: 3px solid #FFD700; background: #FFFDF0;">
+                <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Size="Size.Large" Style="color: #FFD700;" Class="animate-bounce" />
+                <MudText Typo="Typo.h3" Class="font-weight-bold mt-2 text-warning">MATCH ENDED</MudText>
+                
+                @if (winner != null)
+                {
+                    <div class="my-4">
+                        <MudText Typo="Typo.h5">
+                            👑 Winner: 
+                            <span class="font-weight-bold" style="color: @winner.Color;">@winner.Name</span>
+                            with <span class="font-weight-bold text-success">@GameSessionService.GetTotalScore(winner.Id)</span> points!
+                        </MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-1">
+                            (Lowest score wins standard Uno rules)
+                        </MudText>
+                    </div>
+                }
+
+                @if (loser != null)
+                {
+                    <MudText Typo="Typo.subtitle1" Color="Color.Error" Class="mb-4">
+                        💀 Penalty Master: <span class="font-weight-bold" style="color: @loser.Color;">@loser.Name</span> 
+                        with <span class="font-weight-bold">@GameSessionService.GetTotalScore(loser.Id)</span> points.
+                    </MudText>
+                }
+
+                <div class="d-flex justify-center gap-3 mt-4">
+                    <MudButton OnClick="RestartWithSamePlayers" 
+                               Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               StartIcon="@Icons.Material.Filled.Refresh" 
+                               Size="Size.Large"
+                               Class="rounded-pill px-6">
+                        Rematch (Same Players)
+                    </MudButton>
+                    <MudButton Link="/" 
+                               Variant="Variant.Outlined" 
+                               Color="Color.Secondary" 
+                               StartIcon="@Icons.Material.Filled.Home" 
+                               Size="Size.Large"
+                               Class="rounded-pill px-6">
+                        Configure New Game
+                    </MudButton>
+                </div>
+            </MudPaper>
+        }
+
+        <!-- Tab Controls for Scoreboard & Analytics -->
+        <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4 bg-white rounded-b-lg">
+            
+            <!-- Tab 1: Scoreboard -->
+            <MudTabPanel Text="Scoreboard Matrix" Icon="@Icons.Material.Filled.GridOn">
+                <div class="table-responsive border rounded-lg overflow-hidden bg-white shadow-sm mt-2">
+                    <table class="table table-hover table-bordered align-middle text-center mb-0" style="min-width: 600px;">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width: 130px; font-size: 1rem; vertical-align: middle;">Round</th>
+                                @foreach (var p in session.Participants)
+                                {
+                                    <th style="font-size: 1.1rem; vertical-align: middle;">
+                                        <div class="d-flex align-center justify-center">
+                                            <span class="mr-2" style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: @p.Color;"></span>
+                                            <span style="color: @p.Color; font-weight: bold;">@p.Name</span>
+                                        </div>
+                                    </th>
+                                }
+                                <th style="width: 90px; vertical-align: middle;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var round in session.Rounds)
+                            {
+                                <tr>
+                                    <td class="fw-bold text-muted bg-light" style="font-size: 1rem;">
+                                        Round @round.RoundNumber
+                                    </td>
+                                    @foreach (var p in session.Participants)
+                                    {
+                                        var pId = p.Id;
+                                        <td>
+                                            <div class="d-flex justify-center align-center" style="min-height: 48px;">
+                                                <input type="number" 
+                                                       value="@(round.Scores.TryGetValue(pId, out var val) ? val : 0)" 
+                                                       @onchange="@((ChangeEventArgs e) => OnScoreChanged(round.RoundNumber, pId, e.Value))"
+                                                       class="form-control text-center font-weight-bold"
+                                                       style="max-width: 100px; height: 44px; font-size: 1.1rem; border-radius: 8px;" 
+                                                       disabled="@session.IsEnded"
+                                                       min="0"
+                                                       max="500" />
+                                            </div>
+                                        </td>
+                                    }
+                                    <td class="bg-light">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                                       Color="Color.Error" 
+                                                       Size="Size.Small" 
+                                                       Disabled="@(session.IsEnded || session.Rounds.Count <= 1)"
+                                                       OnClick="() => DeleteRound(round.RoundNumber)"
+                                                       Tooltip="Delete Round" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-light fw-bold" style="font-size: 1.15rem; border-top: 3px solid #ccc;">
+                            <tr>
+                                <td class="bg-light text-muted">Running Total</td>
+                                @foreach (var p in session.Participants)
+                                {
+                                    var total = GameSessionService.GetTotalScore(p.Id);
+                                    var overLimit = total >= session.MaxScoreLimit;
+                                    <td style="color: @(overLimit ? "#F44336" : p.Color); vertical-align: middle;">
+                                        @total 
+                                        @if (overLimit)
+                                        {
+                                            <span class="badge bg-danger text-white ms-1" style="font-size: 0.75rem; vertical-align: middle;">BUST!</span>
+                                        }
+                                    </td>
+                                }
+                                <td class="bg-light"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Scoreboard Control Actions -->
+                <div class="mt-5 d-flex flex-column flex-sm-row justify-between gap-3">
+                    <div class="d-flex gap-2">
+                        <MudButton OnClick="AddRound" 
+                                   Variant="Variant.Filled" 
+                                   Color="Color.Success" 
+                                   StartIcon="@Icons.Material.Filled.Add"
+                                   Size="Size.Large"
+                                   Disabled="@session.IsEnded"
+                                   Class="rounded-pill shadow">
+                            Add New Round
+                        </MudButton>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        @if (!session.IsEnded)
+                        {
+                            <MudButton OnClick="ConfirmEndGame" 
+                                       Variant="Variant.Filled" 
+                                       Color="Color.Error" 
+                                       StartIcon="@Icons.Material.Filled.Stop"
+                                       Size="Size.Large"
+                                       Class="rounded-pill shadow">
+                                End Game Prematurely
+                            </MudButton>
+                        }
+                        <MudButton Link="/" 
+                                   Variant="Variant.Outlined" 
+                                   Color="Color.Secondary" 
+                                   StartIcon="@Icons.Material.Filled.ArrowBack" 
+                                   Size="Size.Large"
+                                   Class="rounded-pill">
+                            Quit to Menu
+                        </MudButton>
+                    </div>
+                </div>
+            </MudTabPanel>
+
+            <!-- Tab 2: Progress Analytics -->
+            <MudTabPanel Text="Progress Analytics" Icon="@Icons.Material.Filled.ShowChart" OnClick="OnAnalyticsTabClicked">
+                <MudCard Outlined="true" Class="p-4 rounded-lg mt-2 bg-light">
+                    <MudCardHeader Class="p-0 mb-3">
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6" Class="font-weight-bold">Cumulative Score Progression</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Analyze round-by-round point spikes. Lower paths indicate the leaders!</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent Class="p-0">
+                        @if (session.Rounds.Count == 0)
+                        {
+                            <MudAlert Severity="Severity.Info">Add some rounds and score values to visualize the progression graph.</MudAlert>
+                        }
+                        else
+                        {
+                            <MudChart ChartType="ChartType.Line" 
+                                      ChartSeries="@Series" 
+                                      XAxisLabels="@XLabels" 
+                                      Width="100%" 
+                                      Height="350px" 
+                                      ChartOptions="@ChartOptions"
+                                      CustomColors="@chartColors" />
+                                      
+                            <!-- Player Color Swatches Legend -->
+                            <div class="d-flex flex-wrap justify-center gap-4 mt-4">
+                                @foreach (var p in session.Participants)
+                                {
+                                    <div class="d-flex align-center bg-white px-3 py-1 border rounded-pill shadow-sm">
+                                        <span class="mr-2" style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: @p.Color;"></span>
+                                        <span style="font-weight: bold; color: @p.Color;" class="mr-2">@p.Name:</span>
+                                        <span class="font-weight-bold">@GameSessionService.GetTotalScore(p.Id) pts</span>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudTabPanel>
+        </MudTabs>
+    }
+</MudContainer>
+
+<style>
+    /* Styling for numbers/arrows in numeric inputs */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+        -webkit-appearance: none; 
+        margin: 0; 
+    }
+    input[type=number] {
+        -moz-appearance: textfield;
+    }
+    
+    .font-monospace {
+        font-family: 'Consolas', 'Courier New', Courier, monospace;
+    }
+    
+    .animate-bounce {
+        animation: bounce 2s infinite;
+    }
+    
+    @@keyframes bounce {
+        0%, 100% {
+            transform: translateY(0);
+            animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+        }
+        50% {
+            transform: translateY(-10px);
+            animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+        }
+    }
+</style>
+
+    @code {
+    private GameSession? session;
+    private string formattedTime = "00:00:00";
+    private System.Timers.Timer? timer;
+
+    private Player? winner;
+    private Player? loser;
+
+    // Chart properties
+    private List<ChartSeries<double>> Series = new();
+    private string[] XLabels = Array.Empty<string>();
+    private string[] chartColors = Array.Empty<string>();
+    private ChartOptions ChartOptions = new();
+
+    protected override void OnInitialized()
+    {
+        session = GameSessionService.CurrentSession;
+        if (session == null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        StartTimer();
+        UpdateChartSeriesAndColors();
+        CheckGameEndState();
+    }
+
+    private void StartTimer()
+    {
+        timer = new System.Timers.Timer(1000);
+        timer.Elapsed += (sender, e) =>
+        {
+            InvokeAsync(() =>
+            {
+                if (session != null && !session.IsEnded)
+                {
+                    var elapsed = DateTime.Now - session.StartTime;
+                    formattedTime = elapsed.ToString(@"hh\:mm\:ss");
+                    StateHasChanged();
+                }
+            });
+        };
+        timer.Start();
+    }
+
+    private void OnScoreChanged(int roundNumber, Guid playerId, object? value)
+    {
+        int score = 0;
+        if (value != null && int.TryParse(value.ToString(), out int parsedScore))
+        {
+            score = parsedScore;
+        }
+
+        GameSessionService.UpdateRoundScore(roundNumber, playerId, score);
+        UpdateChartSeriesAndColors();
+        CheckGameEndState();
+    }
+
+    private void AddRound()
+    {
+        GameSessionService.AddRound();
+        UpdateChartSeriesAndColors();
+        Snackbar.Add($"Round {session?.Rounds.Count} added", Severity.Success);
+    }
+
+    private void DeleteRound(int roundNumber)
+    {
+        GameSessionService.DeleteRound(roundNumber);
+        UpdateChartSeriesAndColors();
+        CheckGameEndState();
+        Snackbar.Add($"Round {roundNumber} deleted", Severity.Info);
+    }
+
+    private void ConfirmEndGame()
+    {
+        GameSessionService.EndGame();
+        CheckGameEndState();
+        Snackbar.Add("Game Ended Prematurely", Severity.Warning);
+    }
+
+    private void CheckGameEndState()
+    {
+        if (session == null) return;
+
+        // If game is over, compute winners/losers
+        if (session.IsEnded || GameSessionService.CheckGameOverCondition())
+        {
+            GameSessionService.EndGame(); // Ensure IsEnded is true
+            winner = GameSessionService.GetWinner();
+            loser = GameSessionService.GetLoser();
+        }
+    }
+
+    private void RestartWithSamePlayers()
+    {
+        if (session == null) return;
+        
+        var participants = session.Participants;
+        var maxLimit = session.MaxScoreLimit;
+        
+        GameSessionService.StartNewGame(participants, maxLimit);
+        session = GameSessionService.CurrentSession;
+        
+        winner = null;
+        loser = null;
+        formattedTime = "00:00:00";
+        
+        UpdateChartSeriesAndColors();
+        Snackbar.Add("Match restarted! Good luck!", Severity.Success);
+    }
+
+    private void OnAnalyticsTabClicked()
+    {
+        UpdateChartSeriesAndColors();
+    }
+
+    private void UpdateChartSeriesAndColors()
+    {
+        if (session == null) return;
+
+        var roundsCount = session.Rounds.Count;
+        if (roundsCount == 0)
+        {
+            Series = new List<ChartSeries<double>>();
+            XLabels = Array.Empty<string>();
+            chartColors = Array.Empty<string>();
+            return;
+        }
+
+        XLabels = session.Rounds.Select(r => $"R{r.RoundNumber}").ToArray();
+        chartColors = session.Participants.Select(p => p.Color).ToArray();
+
+        Series = new List<ChartSeries<double>>();
+        foreach (var p in session.Participants)
+        {
+            var cumulativeScores = GameSessionService.GetCumulativeScores(p.Id);
+            var doubleData = cumulativeScores.Select(s => (double)s).ToArray();
+
+            Series.Add(new ChartSeries<double>
+            {
+                Name = p.Name,
+                Data = doubleData
+            });
+        }
+    }
+
+    public void Dispose()
+    {
+        timer?.Dispose();
+    }
+}
