@@ -7,6 +7,6 @@ namespace MnMScoreCounter.Models
     {
         public int RoundNumber { get; set; }
         // Key is Player.Id, Value is the score they got in this specific round
-        public Dictionary<Guid, int> Scores { get; set; } = new();
+        public Dictionary<Guid, int?> Scores { get; set; } = new();
     }
 }

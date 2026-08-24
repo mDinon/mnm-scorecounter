@@ -50,7 +50,7 @@ namespace MnMScoreCounter.Services
             var newRound = new Round
             {
                 RoundNumber = nextRoundNum,
-                Scores = CurrentSession.Participants.ToDictionary(p => p.Id, p => 0)
+                Scores = CurrentSession.Participants.ToDictionary(p => p.Id, p => (int?)null)
             };
 
             CurrentSession.Rounds.Add(newRound);
@@ -102,7 +102,7 @@ namespace MnMScoreCounter.Services
         {
             if (CurrentSession == null) return 0;
 
-            return CurrentSession.Rounds.Sum(r => r.Scores.TryGetValue(playerId, out int s) ? s : 0);
+            return CurrentSession.Rounds.Sum(r => r.Scores.TryGetValue(playerId, out int? s) ? s.GetValueOrDefault() : 0);
         }
 
         public List<int> GetCumulativeScores(Guid playerId)
@@ -113,7 +113,7 @@ namespace MnMScoreCounter.Services
             int sum = 0;
             foreach (var round in CurrentSession.Rounds)
             {
-                sum += round.Scores.TryGetValue(playerId, out int s) ? s : 0;
+                sum += round.Scores.TryGetValue(playerId, out int? s) ? s.GetValueOrDefault() : 0;
                 cumulative.Add(sum);
             }
             return cumulative;
@@ -122,6 +122,14 @@ namespace MnMScoreCounter.Services
         public bool CheckGameOverCondition()
         {
             if (CurrentSession == null) return false;
+
+            var currentRound = CurrentSession.Rounds.Last();
+
+            if (currentRound.Scores.Count != CurrentSession.Participants.Count ||
+                currentRound.Scores.Values.Any(score => score == null))
+            {
+                return false;
+            }
 
             return CurrentSession.Participants.Any(p => GetTotalScore(p.Id) >= CurrentSession.MaxScoreLimit);
         }

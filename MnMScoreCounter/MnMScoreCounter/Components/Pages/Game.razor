@@ -9,7 +9,7 @@
     {
         <MudAlert Severity="Severity.Error" Class="rounded-lg">
             No active game session found. Please set up a game first.
-            <MudButton Link="/" Variant="Variant.Filled" Color="Color.Primary" Class="ml-4">Go to Setup</MudButton>
+            <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary" Class="ml-4">Go to Setup</MudButton>
         </MudAlert>
     }
     else
@@ -74,7 +74,7 @@
                                Class="rounded-pill px-6">
                         Rematch (Same Players)
                     </MudButton>
-                    <MudButton Link="/" 
+                    <MudButton Href="/" 
                                Variant="Variant.Outlined" 
                                Color="Color.Secondary" 
                                StartIcon="@Icons.Material.Filled.Home" 
@@ -91,7 +91,7 @@
             
             <!-- Tab 1: Scoreboard -->
             <MudTabPanel Text="Scoreboard Matrix" Icon="@Icons.Material.Filled.GridOn">
-                <div class="table-responsive border rounded-lg overflow-hidden bg-white shadow-sm mt-2">
+                <div class="table-responsive border rounded-lg overflow-auto bg-white shadow-sm mt-2">
                     <table class="table table-hover table-bordered align-middle text-center mb-0" style="min-width: 600px;">
                         <thead class="table-dark">
                             <tr>
@@ -121,7 +121,7 @@
                                         <td>
                                             <div class="d-flex justify-center align-center" style="min-height: 48px;">
                                                 <input type="number" 
-                                                       value="@(round.Scores.TryGetValue(pId, out var val) ? val : 0)" 
+                                                       value="@(round.Scores.TryGetValue(pId, out var val) ? val : null)" 
                                                        @onchange="@((ChangeEventArgs e) => OnScoreChanged(round.RoundNumber, pId, e.Value))"
                                                        class="form-control text-center font-weight-bold"
                                                        style="max-width: 100px; height: 44px; font-size: 1.1rem; border-radius: 8px;" 
@@ -189,7 +189,7 @@
                                 End Game Prematurely
                             </MudButton>
                         }
-                        <MudButton Link="/" 
+                        <MudButton Href="/"
                                    Variant="Variant.Outlined" 
                                    Color="Color.Secondary" 
                                    StartIcon="@Icons.Material.Filled.ArrowBack" 

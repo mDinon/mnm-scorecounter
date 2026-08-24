@@ -1,0 +1,188 @@
+@page "/players"
+@inject IPlayerService PlayerService
+@inject ISnackbar Snackbar
+
+<div class="w-100 p-3">
+    <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true" Class="mb-4 font-weight-bold" Style="color: var(--mud-palette-primary);">
+        <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Class="mr-2" />
+        Player Directory
+    </MudText>
+
+    <MudGrid Class="justify-center">
+        <!-- Player Creation / Editing Form -->
+        <MudItem xs="12" md="5">
+            <MudCard Elevation="3" Class="rounded-lg">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6" Class="font-weight-bold">
+                            @(editingPlayer == null ? "Create New Player" : "Edit Player")
+                        </MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Define name and graph line color for the player.</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudPaper Outlined="true" Class="pa-4 rounded-lg bg-light d-flex flex-column gap-4">
+                        <MudTextField @bind-Value="playerName" 
+                                      Label="Player Name" 
+                                      Variant="Variant.Outlined" 
+                                      Margin="Margin.Dense"
+                                      Required="true"
+                                      RequiredError="Name is required" />
+
+                        <div class="d-flex align-center gap-3">
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background-color: @playerColor; border: 2px solid #ccc; box-shadow: 0 1px 3px rgba(0,0,0,0.2);" class="flex-shrink-0"></div>
+                            <MudColorPicker @bind-Text="playerColor" 
+                                            Label="Select Theme Color" 
+                                            Style="@($"color: {playerColor};")" 
+                                            Margin="Margin.Dense" 
+                                            PickerVariant="PickerVariant.Inline"
+                                            Class="flex-grow-1" />
+                        </div>
+
+                        <div class="d-flex justify-end gap-2 mt-2">
+                            @if (editingPlayer != null)
+                            {
+                                <MudButton OnClick="CancelEdit" Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small">
+                                    Cancel
+                                </MudButton>
+                                <MudButton OnClick="SavePlayer" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small">
+                                    Update
+                                </MudButton>
+                            }
+                            else
+                            {
+                                <MudButton OnClick="SavePlayer" Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Add" Size="Size.Small">
+                                    Add Player
+                                </MudButton>
+                            }
+                        </div>
+                    </MudPaper>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <!-- Persistent Players List -->
+        <MudItem xs="12" md="7">
+            <MudCard Elevation="3" Class="rounded-lg">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6" Class="font-weight-bold">Registered Players</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Players available to participate in matches.</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    @if (players == null)
+                    {
+                        <div class="d-flex justify-center p-4">
+                            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                        </div>
+                    }
+                    else if (players.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Class="rounded-lg">
+                            No players registered yet. Create your first player on the left!
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudList T="Player" Clickable="true" Class="rounded-lg border pa-0">
+                            @foreach (var p in players)
+                            {
+                                <MudListItem Value="p" Class="px-3 py-2 border-bottom">
+                                    <div class="d-flex align-center justify-between w-100">
+                                        <div class="d-flex align-center">
+                                            <span class="mr-3" style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background-color: @p.Color;"></span>
+                                            <MudText Typo="Typo.body1" Class="font-weight-medium">@p.Name</MudText>
+                                        </div>
+                                        <div class="d-flex gap-1">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                                           Color="Color.Info" 
+                                                           Size="Size.Small" 
+                                                           OnClick="() => StartEdit(p)" />
+                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                                           Color="Color.Error" 
+                                                           Size="Size.Small" 
+                                                           OnClick="() => DeletePlayer(p.Id)" />
+                                        </div>
+                                    </div>
+                                </MudListItem>
+                            }
+                        </MudList>
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</div>
+
+@code {
+    private List<Player>? players;
+    private string playerName = "";
+    private string playerColor = "#512BD4";
+    private Player? editingPlayer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPlayers();
+    }
+
+    private async Task LoadPlayers()
+    {
+        players = await PlayerService.GetPlayersAsync();
+    }
+
+    private void StartEdit(Player player)
+    {
+        editingPlayer = player;
+        playerName = player.Name;
+        playerColor = player.Color;
+    }
+
+    private void CancelEdit()
+    {
+        editingPlayer = null;
+        playerName = "";
+        playerColor = "#512BD4";
+    }
+
+    private async Task SavePlayer()
+    {
+        if (string.IsNullOrWhiteSpace(playerName))
+        {
+            Snackbar.Add("Player name is required", Severity.Error);
+            return;
+        }
+
+        if (editingPlayer != null)
+        {
+            editingPlayer.Name = playerName;
+            editingPlayer.Color = playerColor;
+            await PlayerService.UpdatePlayerAsync(editingPlayer);
+            Snackbar.Add($"Player '{playerName}' updated successfully!", Severity.Success);
+        }
+        else
+        {
+            var newPlayer = new Player
+            {
+                Name = playerName,
+                Color = playerColor
+            };
+            await PlayerService.AddPlayerAsync(newPlayer);
+            Snackbar.Add($"Player '{playerName}' added successfully!", Severity.Success);
+        }
+
+        CancelEdit();
+        await LoadPlayers();
+    }
+
+    private async Task DeletePlayer(Guid id)
+    {
+        var player = players?.FirstOrDefault(p => p.Id == id);
+        if (player != null)
+        {
+            await PlayerService.DeletePlayerAsync(id);
+            Snackbar.Add($"Player '{player.Name}' deleted", Severity.Info);
+            await LoadPlayers();
+        }
+    }
+}

@@ -1,10 +1,17 @@
-﻿@inject IGameSessionService GameSessionService
+@inject IGameSessionService GameSessionService
 
 <div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">
-            Uno Scoreboard
+    <div class="container-fluid d-flex align-items-center justify-content-between">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="">
+            <MudIcon Icon="@Icons.Material.Filled.Home" Class="text-white" />
+            <span>Uno Counter</span>
         </a>
+        <MudIconButton Icon="@(IsDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" 
+                       Color="Color.Inherit" 
+                       Size="Size.Medium"
+                       OnClick="ToggleMode" 
+                       Class="text-white me-2"
+                       Title="@(IsDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode")" />
     </div>
 </div>
 
@@ -14,16 +21,34 @@
     <nav class="nav flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                Setup Match
+                <MudIcon Icon="@Icons.Material.Filled.PlayArrow" Class="mr-2" Size="Size.Small" /> Game Setup
             </NavLink>
         </div>
-        @if (GameSessionService.CurrentSession != null)
+        @if (GameSessionService.CurrentSession != null && !GameSessionService.CurrentSession.IsEnded)
         {
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="game">
-                    Active Match
+                    <MudIcon Icon="@Icons.Material.Filled.SportsEsports" Class="mr-2" Size="Size.Small" /> Active Match
                 </NavLink>
             </div>
         }
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="players">
+                <MudIcon Icon="@Icons.Material.Filled.People" Class="mr-2" Size="Size.Small" /> Players
+            </NavLink>
+        </div>
     </nav>
 </div>
+
+@code {
+    [Parameter] public bool IsDarkMode { get; set; } = true;
+    [Parameter] public EventCallback OnToggleDarkMode { get; set; }
+
+    private async Task ToggleMode()
+    {
+        if (OnToggleDarkMode.HasDelegate)
+        {
+            await OnToggleDarkMode.InvokeAsync();
+        }
+    }
+}
