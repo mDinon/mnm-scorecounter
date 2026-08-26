@@ -92,10 +92,10 @@
             <!-- Tab 1: Scoreboard -->
             <MudTabPanel Text="Scoreboard Matrix" Icon="@Icons.Material.Filled.GridOn">
                 <div class="table-responsive border rounded-lg overflow-auto bg-white shadow-sm mt-2">
-                    <table class="table table-hover table-bordered align-middle text-center mb-0" style="min-width: 600px;">
+                    <table class="table table-hover table-bordered align-middle text-center mb-0 scoreboard-table" style="min-width: 600px;">
                         <thead class="table-dark">
                             <tr>
-                                <th style="width: 130px; font-size: 1rem; vertical-align: middle;">#</th>
+                                <th style="max-width: 50px; font-size: 0.9rem; vertical-align: middle;">#</th>
                                 @foreach (var p in session.Participants)
                                 {
                                     <th style="font-size: 1.1rem; vertical-align: middle;">
@@ -112,19 +112,19 @@
                             @foreach (var round in session.Rounds)
                             {
                                 <tr>
-                                    <td class="fw-bold text-muted bg-light" style="font-size: 1rem;">
+                                    <td class="fw-bold text-muted bg-light" style="font-size: 0.9rem;">
                                         @round.RoundNumber .
                                     </td>
                                     @foreach (var p in session.Participants)
                                     {
                                         var pId = p.Id;
                                         <td>
-                                            <div class="d-flex justify-center align-center" style="min-height: 48px;">
+                                            <div class="d-flex justify-center align-center" style="min-height: 34px;">
                                                 <input type="number" 
                                                        value="@(round.Scores.TryGetValue(pId, out var val) ? val : null)" 
                                                        @onchange="@((ChangeEventArgs e) => OnScoreChanged(round.RoundNumber, pId, e.Value))"
                                                        class="form-control text-center font-weight-bold"
-                                                       style="max-width: 100px; height: 44px; font-size: 1.1rem; border-radius: 8px;" 
+                                                       style="max-width: 70px; height: 31px; font-size: 0.9rem; border-radius: 6px;" 
                                                        disabled="@session.IsEnded"
                                                        min="0"
                                                        max="500" />
@@ -253,6 +253,11 @@
     }
     input[type=number] {
         -moz-appearance: textfield;
+    }
+
+    .scoreboard-table th,
+    .scoreboard-table td {
+        padding: 0.35rem;
     }
     
     .font-monospace {
