@@ -138,7 +138,6 @@
         var activePlayers = players.Where(p => selectedPlayerIds.Contains(p.Id)).ToList();
         GameSessionService.StartNewGame(activePlayers, maxScoreLimit);
         
-        Snackbar.Add("Game Started! Have fun!", Severity.Success);
         NavigationManager.NavigateTo("game");
     }
 }

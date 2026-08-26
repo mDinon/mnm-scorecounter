@@ -95,7 +95,7 @@
                     <table class="table table-hover table-bordered align-middle text-center mb-0 scoreboard-table" style="min-width: 600px;">
                         <thead class="table-dark">
                             <tr>
-                                <th style="max-width: 50px; font-size: 0.9rem; vertical-align: middle;">#</th>
+                                <th style="max-width: 30px; font-size: 0.9rem; vertical-align: middle;">#</th>
                                 @foreach (var p in session.Participants)
                                 {
                                     <th style="font-size: 1.1rem; vertical-align: middle;">
@@ -144,7 +144,9 @@
                         </tbody>
                         <tfoot class="table-light fw-bold" style="font-size: 1.15rem; border-top: 3px solid #ccc;">
                             <tr>
-                                <td class="bg-light text-muted">Sum</td>
+                                <td class="bg-light text-muted">
+                                    <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Size="Size.Small" />
+                                </td>
                                 @foreach (var p in session.Participants)
                                 {
                                     var total = GameSessionService.GetTotalScore(p.Id);
@@ -343,7 +345,6 @@
     {
         GameSessionService.AddRound();
         UpdateChartSeriesAndColors();
-        Snackbar.Add($"Round {session?.Rounds.Count} added", Severity.Success);
     }
 
     private void DeleteRound(int roundNumber)
@@ -351,14 +352,12 @@
         GameSessionService.DeleteRound(roundNumber);
         UpdateChartSeriesAndColors();
         CheckGameEndState();
-        Snackbar.Add($"Round {roundNumber} deleted", Severity.Info);
     }
 
     private void ConfirmEndGame()
     {
         GameSessionService.EndGame();
         CheckGameEndState();
-        Snackbar.Add("Game Ended Prematurely", Severity.Warning);
     }
 
     private void CheckGameEndState()
@@ -389,7 +388,6 @@
         formattedTime = "00:00:00";
         
         UpdateChartSeriesAndColors();
-        Snackbar.Add("Match restarted! Good luck!", Severity.Success);
     }
 
     private void OnAnalyticsTabClicked()
