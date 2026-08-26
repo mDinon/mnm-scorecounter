@@ -14,27 +14,28 @@
     }
     else
     {
-        <!-- Game Status Header Card -->
-        <MudCard Elevation="4" Class="mb-4 rounded-lg overflow-hidden">
-            <div class="px-6 py-4 d-flex flex-column flex-sm-row justify-between align-center" style="background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-primary-darken) 100%); color: white;">
-                <div>
-                    <MudText Typo="Typo.h4" Class="font-weight-bold d-flex align-center">
-                        <MudIcon Icon="@Icons.Material.Filled.SportsEsports" Class="mr-2" />
-                        Match in Progress
-                    </MudText>
-                    <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.85);">
-                        Target Score Limit: <span class="font-weight-bold" style="color: #FFEA00; font-size: 1.1rem;">@session.MaxScoreLimit</span> points
-                    </MudText>
+        <div class="d-flex justify-content-end">
+            <!-- Game Status Header Card -->
+            <MudCard Elevation="4" Class="mb-4 rounded-lg overflow-hidden" Style="max-width: 70%;">
+                <div class="px-6 py-4 d-flex flex-column flex-sm-row justify-between align-center" style="background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-primary-darken) 100%); color: white;">
+                    <div>
+                        <MudText Typo="Typo.h6" Class="font-weight-bold d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.SportsEsports" Class="mr-2" />
+                            Match in Progress
+                        </MudText>
+                        <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.85);">
+                            Target Score Limit: <span class="font-weight-bold" style="color: #FFEA00; font-size: 1.1rem;">@session.MaxScoreLimit</span> points
+                        </MudText>
+                    </div>
+                    <div class="mt-3 mt-sm-0 text-center text-sm-right d-flex flex-column align-center align-sm-end">
+                        <MudText Typo="Typo.h6" Class="font-weight-bold font-monospace" Style="color: #00E676;">
+                            <MudIcon Icon="@Icons.Material.Filled.Timer" Class="mr-1" Size="Size.Small" />
+                            @formattedTime
+                        </MudText>
+                    </div>
                 </div>
-                <div class="mt-3 mt-sm-0 text-center text-sm-right d-flex flex-column align-center align-sm-end">
-                    <MudText Typo="Typo.subtitle2" Style="color: rgba(255,255,255,0.7);">ELAPSED TIME</MudText>
-                    <MudText Typo="Typo.h4" Class="font-weight-bold font-monospace" Style="color: #00E676;">
-                        <MudIcon Icon="@Icons.Material.Filled.Timer" Class="mr-1" Size="Size.Small" />
-                        @formattedTime
-                    </MudText>
-                </div>
-            </div>
-        </MudCard>
+            </MudCard>
+        </div>
 
         @if (session.IsEnded)
         {
@@ -42,12 +43,12 @@
             <MudPaper Elevation="5" Class="p-6 mb-6 rounded-lg text-center border-3" Style="border: 3px solid #FFD700; background: #FFFDF0;">
                 <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Size="Size.Large" Style="color: #FFD700;" Class="animate-bounce" />
                 <MudText Typo="Typo.h3" Class="font-weight-bold mt-2 text-warning">MATCH ENDED</MudText>
-                
+
                 @if (winner != null)
                 {
                     <div class="my-4">
                         <MudText Typo="Typo.h5">
-                            👑 Winner: 
+                            👑 Winner:
                             <span class="font-weight-bold" style="color: @winner.Color;">@winner.Name</span>
                             with <span class="font-weight-bold text-success">@GameSessionService.GetTotalScore(winner.Id)</span> points!
                         </MudText>
@@ -60,24 +61,24 @@
                 @if (loser != null)
                 {
                     <MudText Typo="Typo.subtitle1" Color="Color.Error" Class="mb-4">
-                        💀 Penalty Master: <span class="font-weight-bold" style="color: @loser.Color;">@loser.Name</span> 
+                        💀 Penalty Master: <span class="font-weight-bold" style="color: @loser.Color;">@loser.Name</span>
                         with <span class="font-weight-bold">@GameSessionService.GetTotalScore(loser.Id)</span> points.
                     </MudText>
                 }
 
                 <div class="d-flex justify-center gap-3 mt-4">
-                    <MudButton OnClick="RestartWithSamePlayers" 
-                               Variant="Variant.Filled" 
-                               Color="Color.Primary" 
-                               StartIcon="@Icons.Material.Filled.Refresh" 
+                    <MudButton OnClick="RestartWithSamePlayers"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Refresh"
                                Size="Size.Large"
                                Class="rounded-pill px-6">
                         Rematch (Same Players)
                     </MudButton>
-                    <MudButton Href="/" 
-                               Variant="Variant.Outlined" 
-                               Color="Color.Secondary" 
-                               StartIcon="@Icons.Material.Filled.Home" 
+                    <MudButton Href="/"
+                               Variant="Variant.Outlined"
+                               Color="Color.Secondary"
+                               StartIcon="@Icons.Material.Filled.Home"
                                Size="Size.Large"
                                Class="rounded-pill px-6">
                         Configure New Game
@@ -88,9 +89,9 @@
 
         <!-- Tab Controls for Scoreboard & Analytics -->
         <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4 bg-white rounded-b-lg">
-            
+
             <!-- Tab 1: Scoreboard -->
-            <MudTabPanel Text="Scoreboard Matrix" Icon="@Icons.Material.Filled.GridOn">
+            <MudTabPanel Text="Scoreboard" Icon="@Icons.Material.Filled.GridOn">
                 <div class="table-responsive border rounded-lg overflow-auto bg-white shadow-sm mt-2">
                     <table class="table table-hover table-bordered align-middle text-center mb-0 scoreboard-table" style="min-width: 600px;">
                         <thead class="table-dark">
@@ -120,11 +121,11 @@
                                         var pId = p.Id;
                                         <td>
                                             <div class="d-flex justify-center align-center" style="min-height: 34px;">
-                                                <input type="number" 
-                                                       value="@(round.Scores.TryGetValue(pId, out var val) ? val : null)" 
+                                                <input type="number"
+                                                       value="@(round.Scores.TryGetValue(pId, out var val) ? val : null)"
                                                        @onchange="@((ChangeEventArgs e) => OnScoreChanged(round.RoundNumber, pId, e.Value))"
                                                        class="form-control text-center font-weight-bold"
-                                                       style="max-width: 70px; height: 31px; font-size: 0.9rem; border-radius: 6px;" 
+                                                       style="max-width: 70px; height: 31px; font-size: 0.9rem; border-radius: 6px;"
                                                        disabled="@session.IsEnded"
                                                        min="0"
                                                        max="500" />
@@ -132,9 +133,9 @@
                                         </td>
                                     }
                                     <td class="bg-light">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" 
-                                                       Color="Color.Error" 
-                                                       Size="Size.Small" 
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Color="Color.Error"
+                                                       Size="Size.Small"
                                                        Disabled="@(session.IsEnded || session.Rounds.Count <= 1)"
                                                        OnClick="() => DeleteRound(round.RoundNumber)"
                                                        Tooltip="Delete Round" />
@@ -152,7 +153,7 @@
                                     var total = GameSessionService.GetTotalScore(p.Id);
                                     var overLimit = total >= session.MaxScoreLimit;
                                     <td style="color: @(overLimit ? "#F44336" : p.Color); vertical-align: middle;">
-                                        @total 
+                                        @total
                                         @if (overLimit)
                                         {
                                             <span class="badge bg-danger text-white ms-1" style="font-size: 0.75rem; vertical-align: middle;">BUST!</span>
@@ -168,9 +169,9 @@
                 <!-- Scoreboard Control Actions -->
                 <div class="mt-5 d-flex flex-column flex-sm-row justify-between gap-3">
                     <div class="d-flex gap-2">
-                        <MudButton OnClick="AddRound" 
-                                   Variant="Variant.Filled" 
-                                   Color="Color.Success" 
+                        <MudButton OnClick="AddRound"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Success"
                                    StartIcon="@Icons.Material.Filled.Add"
                                    Size="Size.Large"
                                    Disabled="@session.IsEnded"
@@ -182,29 +183,21 @@
                     <div class="d-flex gap-2">
                         @if (!session.IsEnded)
                         {
-                            <MudButton OnClick="ConfirmEndGame" 
-                                       Variant="Variant.Filled" 
-                                       Color="Color.Error" 
+                            <MudButton OnClick="ConfirmEndGame"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Error"
                                        StartIcon="@Icons.Material.Filled.Stop"
-                                       Size="Size.Large"
+                                       Size="Size.Medium"
                                        Class="rounded-pill shadow">
-                                End Game Prematurely
+                                End Game
                             </MudButton>
                         }
-                        <MudButton Href="/"
-                                   Variant="Variant.Outlined" 
-                                   Color="Color.Secondary" 
-                                   StartIcon="@Icons.Material.Filled.ArrowBack" 
-                                   Size="Size.Large"
-                                   Class="rounded-pill">
-                            Quit to Menu
-                        </MudButton>
                     </div>
                 </div>
             </MudTabPanel>
 
             <!-- Tab 2: Progress Analytics -->
-            <MudTabPanel Text="Progress Analytics" Icon="@Icons.Material.Filled.ShowChart" OnClick="OnAnalyticsTabClicked">
+            <MudTabPanel Text="Chart" Icon="@Icons.Material.Filled.ShowChart" OnClick="OnAnalyticsTabClicked">
                 <MudCard Outlined="true" Class="p-4 rounded-lg mt-2 bg-light">
                     <MudCardHeader Class="p-0 mb-3">
                         <CardHeaderContent>
@@ -219,14 +212,14 @@
                         }
                         else
                         {
-                            <MudChart ChartType="ChartType.Line" 
-                                      ChartSeries="@Series" 
-                                      XAxisLabels="@XLabels" 
-                                      Width="100%" 
-                                      Height="350px" 
+                            <MudChart ChartType="ChartType.Line"
+                                      ChartSeries="@Series"
+                                      XAxisLabels="@XLabels"
+                                      Width="100%"
+                                      Height="350px"
                                       ChartOptions="@ChartOptions"
                                       CustomColors="@chartColors" />
-                                      
+
                             <!-- Player Color Swatches Legend -->
                             <div class="d-flex flex-wrap justify-center gap-4 mt-4">
                                 @foreach (var p in session.Participants)
@@ -248,11 +241,12 @@
 
 <style>
     /* Styling for numbers/arrows in numeric inputs */
-    input[type=number]::-webkit-inner-spin-button, 
-    input[type=number]::-webkit-outer-spin-button { 
-        -webkit-appearance: none; 
-        margin: 0; 
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
     }
+
     input[type=number] {
         -moz-appearance: textfield;
     }
@@ -261,20 +255,21 @@
     .scoreboard-table td {
         padding: 0.35rem;
     }
-    
+
     .font-monospace {
         font-family: 'Consolas', 'Courier New', Courier, monospace;
     }
-    
+
     .animate-bounce {
         animation: bounce 2s infinite;
     }
-    
+
     @@keyframes bounce {
         0%, 100% {
             transform: translateY(0);
             animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
         }
+
         50% {
             transform: translateY(-10px);
             animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
@@ -282,7 +277,7 @@
     }
 </style>
 
-    @code {
+@code {
     private GameSession? session;
     private string formattedTime = "00:00:00";
     private System.Timers.Timer? timer;
@@ -376,17 +371,17 @@
     private void RestartWithSamePlayers()
     {
         if (session == null) return;
-        
+
         var participants = session.Participants;
         var maxLimit = session.MaxScoreLimit;
-        
+
         GameSessionService.StartNewGame(participants, maxLimit);
         session = GameSessionService.CurrentSession;
-        
+
         winner = null;
         loser = null;
         formattedTime = "00:00:00";
-        
+
         UpdateChartSeriesAndColors();
     }
 
