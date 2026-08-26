@@ -95,7 +95,7 @@
                     <table class="table table-hover table-bordered align-middle text-center mb-0" style="min-width: 600px;">
                         <thead class="table-dark">
                             <tr>
-                                <th style="width: 130px; font-size: 1rem; vertical-align: middle;">Round</th>
+                                <th style="width: 130px; font-size: 1rem; vertical-align: middle;">#</th>
                                 @foreach (var p in session.Participants)
                                 {
                                     <th style="font-size: 1.1rem; vertical-align: middle;">
@@ -113,7 +113,7 @@
                             {
                                 <tr>
                                     <td class="fw-bold text-muted bg-light" style="font-size: 1rem;">
-                                        Round @round.RoundNumber
+                                        @round.RoundNumber .
                                     </td>
                                     @foreach (var p in session.Participants)
                                     {
@@ -144,7 +144,7 @@
                         </tbody>
                         <tfoot class="table-light fw-bold" style="font-size: 1.15rem; border-top: 3px solid #ccc;">
                             <tr>
-                                <td class="bg-light text-muted">Running Total</td>
+                                <td class="bg-light text-muted">Sum</td>
                                 @foreach (var p in session.Participants)
                                 {
                                     var total = GameSessionService.GetTotalScore(p.Id);
